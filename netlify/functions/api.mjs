@@ -24,6 +24,7 @@ async function auth(req) {
   const [key, exp] = Buffer.from(b, "base64url").toString().split("|");
   return +exp > Date.now() ? key : null;
 }
+const MIN = 100;
 const n = (v, m) => Math.max(0, Math.min(m, Math.floor(+v) || 0));
 const clean = (d = {}) => ({
   coins: n(d.coins, 1e7), hi: n(d.hi, 2e5), skin: n(d.skin, 50),
@@ -42,7 +43,7 @@ export default async (req) => {
     const rows = (await Promise.all(blobs.slice(0, 500).map((b) => s.get(b.key, { type: "json" }))))
       .filter(Boolean).sort((a, b) => b.score - a.score);
     const key = await auth(req), i = key ? rows.findIndex((r) => r.name.toLowerCase() === key) : -1;
-    return J({ top: rows.slice(0, 50), total: rows.length, me: i >= 0 ? { rank: i + 1, score: rows[i].score } : null });
+    return J({ top: rows.slice(0, 50), total: rows.length, min: MIN, cut: rows.length >= 50 ? rows[49].score + 1 : MIN, me: i >= 0 ? { rank: i + 1, score: rows[i].score } : null });
   }
 
   if (p === "register" || p === "login") {
@@ -70,8 +71,15 @@ export default async (req) => {
   if (p === "save") { u.data = clean(body.data); await users().setJSON(key, u); return J({ ok: 1 }); }
   if (p === "score") {
     const sc = n(body.score, 2e5), prev = await scores().get(key, { type: "json" });
-    if (!prev || sc > prev.score) await scores().setJSON(key, { name: u.name, score: sc, skin: n(body.skin, 50) });
-    return J({ ok: 1 });
+    if (sc >= MIN && (!prev || sc > prev.score)) await scores().setJSON(key, { name: u.name, score: sc, skin: n(body.skin, 50) });
+    const best = Math.max(sc >= MIN ? sc : 0, prev ? prev.score : 0);
+    let rank = null;
+    if (best >= MIN) {
+      const s = scores(), { blobs } = await s.list();
+      const all = (await Promise.all(blobs.slice(0, 500).map((b) => s.get(b.key, { type: "json" })))).filter(Boolean);
+      rank = all.filter((r) => r.score > best && r.name.toLowerCase() !== key).length + 1;
+    }
+    return J({ ok: 1, rank, best });
   }
   return J({ error: "Nicht gefunden" }, 404);
 };
