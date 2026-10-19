@@ -40,8 +40,9 @@ export default async (req) => {
     const s = scores();
     const { blobs } = await s.list();
     const rows = (await Promise.all(blobs.slice(0, 500).map((b) => s.get(b.key, { type: "json" }))))
-      .filter(Boolean).sort((a, b) => b.score - a.score).slice(0, 50);
-    return J({ top: rows });
+      .filter(Boolean).sort((a, b) => b.score - a.score);
+    const key = await auth(req), i = key ? rows.findIndex((r) => r.name.toLowerCase() === key) : -1;
+    return J({ top: rows.slice(0, 50), total: rows.length, me: i >= 0 ? { rank: i + 1, score: rows[i].score } : null });
   }
 
   if (p === "register" || p === "login") {
