@@ -231,12 +231,17 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
 /* ---------- Werbung (Google AdSense) ----------
    Deine ID kommt in ads-config.js. */
 const C0=window.ADS_CFG||{},ADS={client:C0.client||'',test:C0.test!==false,every:3,minGap:120000};let lastAd=0;
+const HOUSE=C0.house&&C0.house.length?C0.house:[{e:'🎮',t:'Danke fürs Spielen!',d:'Erzähl deinen Freunden vom Doodle Jumper und knackt gemeinsam neue Rekorde.',u:'',c:'#ffd166'}];
 if(ADS.client){window.adsbygoogle=window.adsbygoogle||[];window.adBreak=window.adConfig=o=>adsbygoogle.push(o);const sc=document.createElement('script');sc.async=1;sc.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+ADS.client;sc.crossOrigin='anonymous';sc.onerror=()=>{ADS.fail=1};sc.dataset.adFrequencyHint='30s';if(ADS.test)sc.dataset.adbreakTest='on';document.head.appendChild(sc);adConfig({preloadAdBreaks:'on',sound:'on'})}
 function showAd(kind,cb){lastAd=Date.now();
- if(!ADS.client||ADS.fail||!window.adBreak)return cb();
+ const house=()=>{const a=HOUSE[Math.floor(Math.random()*HOUSE.length)],el=$('ad');let n=5;el.hidden=false;
+  el.innerHTML=`<div class="card"><div class="adl">ANZEIGE</div><div class="adart" style="background:${a.c||'#ffd166'}">${a.e}</div><h2>${esc(a.t)}</h2><p>${esc(a.d)}</p>${a.u?`<a class="b bl" style="text-decoration:none" target="_blank" rel="noopener" href="${esc(a.u)}">Mehr erfahren</a>`:''}<button class="b bg" id="adx" disabled>Weiter in ${n}s</button></div>`;
+  const b=$('adx'),iv=setInterval(()=>{n--;if(n>0)b.textContent='Weiter in '+n+'s';else{clearInterval(iv);b.disabled=false;b.textContent='🎁 Belohnung holen'}},1000);
+  b.onclick=()=>{el.hidden=true;cb()}};
+ if(!ADS.client||ADS.fail||!window.adBreak)return house();
  let got=false,fin=false,tm;const one=f=>{if(fin)return;fin=true;clearTimeout(tm);f()};
- tm=setTimeout(()=>{if(!got)one(cb)},5000);
- adBreak({type:'reward',name:'reward',beforeReward:s=>{got=true;clearTimeout(tm);s()},adViewed:()=>one(cb),adBreakDone:()=>{if(!got)one(cb);else one(()=>{})}})}
+ tm=setTimeout(()=>{if(!got)one(house)},5000);
+ adBreak({type:'reward',name:'reward',beforeReward:s=>{got=true;clearTimeout(tm);s()},adViewed:()=>one(cb),adBreakDone:()=>{if(!got)one(house);else one(()=>{})}})}
 function loop(n){const dt=Math.min(2.5,(n-last)/16.67||1);last=n;if(state=='play')upd(dt);draw();requestAnimationFrame(loop)}
 addEventListener('resize',rs);rs();menu('main');requestAnimationFrame(loop);
 </script>
