@@ -3,7 +3,8 @@ import { scryptSync, randomBytes, createHmac, timingSafeEqual } from "node:crypt
 
 export const config = { path: "/api/*" };
 
-const J = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { "content-type": "application/json", "cache-control": "no-store" } });
+const CORS = { "access-control-allow-origin": "*", "access-control-allow-headers": "content-type, authorization", "access-control-allow-methods": "GET, POST, OPTIONS" };
+const J = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { "content-type": "application/json", "cache-control": "no-store", ...CORS } });
 const users = () => getStore("users"), scores = () => getStore("scores"), meta = () => getStore("meta");
 
 async function secret() {
@@ -34,6 +35,7 @@ const clean = (d = {}) => ({
 const hash = (pw, salt) => scryptSync(pw, salt, 32).toString("hex");
 
 export default async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
   const p = new URL(req.url).pathname.replace(/^\/api\//, "");
   const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
 
