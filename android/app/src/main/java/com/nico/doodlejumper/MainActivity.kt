@@ -1,6 +1,9 @@
 package com.nico.doodlejumper
 
 import android.annotation.SuppressLint
+import android.app.UiModeManager
+import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.os.Bundle
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
@@ -30,6 +33,10 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Handy: Hochformat. Tablet und TV: Drehen bzw. Querformat erlaubt.
+        val isTv = (getSystemService(UI_MODE_SERVICE) as UiModeManager).currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
+        val isTablet = resources.configuration.smallestScreenWidthDp >= 600
+        requestedOrientation = if (isTv || isTablet) ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR else ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         WindowCompat.setDecorFitsSystemWindows(window, false)
         WindowInsetsControllerCompat(window, window.decorView).apply {
             hide(WindowInsetsCompat.Type.systemBars())
@@ -47,7 +54,10 @@ class MainActivity : AppCompatActivity() {
         web.overScrollMode = WebView.OVER_SCROLL_NEVER
         web.addJavascriptInterface(Bridge(), "AndroidAds")
         setContentView(web)
-        web.loadUrl(START_URL)
+        web.isFocusable = true
+        web.isFocusableInTouchMode = true
+        web.requestFocus()
+        web.loadUrl(if (isTv) START_URL + "?tv=1" else START_URL)  // ?tv=1 schaltet die Fernbedienungs-Steuerung ein
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {

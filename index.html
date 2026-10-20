@@ -107,7 +107,19 @@ h2{letter-spacing:.3px}
 .side.l{left:2vw}.side.r{right:2vw}.side[hidden]{display:none}.side h3{margin:0 0 8px;font-size:1.1rem}.side p{margin:6px 0}
 kbd{display:inline-block;min-width:1.6em;padding:1px 6px;margin:1px;border-radius:6px;border:1px solid #fff5;background:#fff2;font:inherit;font-size:.85em;text-align:center}
 @media(hover:hover){.b:hover:not(:disabled){transform:translateY(-1px)}}
-.side .ic{width:1.45em;height:1.45em;filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff)}</style></head><body>
+.side .ic{width:1.45em;height:1.45em;filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff)}
+/* ---------- Geräteanpassung: PC / Tablet / Handy / TV ---------- */
+:focus-visible{outline:4px solid #ff665e;outline-offset:3px}
+.dev-tv,.dev-tv *{cursor:none!important}
+.dev-tv #sb,.dev-tv #pb{display:none!important}
+.dev-tv button:focus,.dev-tv a:focus{outline:5px solid #fff;outline-offset:3px;transform:scale(1.06);box-shadow:0 0 0 8px #ff665e,0 5px 0 var(--ink)}
+.dev-tv .side{font-size:1.25rem;line-height:1.5}
+.dev-tv .side h3{font-size:1.6rem}
+.dev-tablet .side{font-size:1.05rem}
+.dev-phone .side{display:none!important}
+@media(hover:none){.b:hover{transform:none}}
+@media(min-width:521px) and (max-width:1100px) and (pointer:coarse){.b{padding:14px}}
+</style></head><body>
 <aside id="sidel" class="side l" hidden></aside><aside id="sider" class="side r" hidden></aside>
 <div id="wrap"><canvas id="g"></canvas>
 <div id="hud" hidden><span id="hl"></span><span id="hs"></span><span id="hc"></span></div>
@@ -118,9 +130,11 @@ kbd{display:inline-block;min-width:1.6em;padding:1px 6px;margin:1px;border-radiu
 let c;const $=i=>document.getElementById(i),cv=$('g'),INK='#29283a';c=cv.getContext('2d');
 const R=(a,b)=>a+Math.random()*(b-a),cl=(v,a,b)=>Math.max(a,Math.min(b,v));
 let W=400,H=700,S=1;
-let ANG=0;const TOUCH=matchMedia('(pointer:coarse)').matches,PHONE=TOUCH&&Math.min(screen.width,screen.height)<600;
-function rs(){let a=PHONE?((screen.orientation&&screen.orientation.angle)||window.orientation||0):0;a=((a%360)+360)%360;ANG=a;const ow=innerWidth,oh=innerHeight,sw=a==90||a==270,pw=sw?oh:ow,ph=sw?ow:oh,h=PHONE?cl(Math.round(ph/pw*400),620,800):(ow>oh?700:cl(Math.round(oh/ow*400),640,800)),k=Math.min(pw/400,ph/h),d=Math.min(devicePixelRatio||1,2);
- const sl=$('sidel'),sr=$('sider');if(sl){if(!sl.dataset.f){sl.dataset.f=1;sl.innerHTML=ico('<h3>Steuerung</h3><p><kbd>←</kbd><kbd>→</kbd> oder <kbd>A</kbd><kbd>D</kbd> bewegen</p><p><kbd>Leertaste</kbd> oder <kbd>↑</kbd> schießen</p><p><kbd>Esc</kbd> oder <kbd>P</kbd> Pause</p><p><kbd>Enter</kbd> Start / Weiter</p><p><kbd>M</kbd> Ton &nbsp; <kbd>F</kbd> Vollbild</p><p>Maus: linke / rechte Hälfte zum Bewegen, Rechtsklick schießt.</p>');sr.innerHTML=ico('<h3>Tipps</h3><p>[[rocket]] Jetpack: fliegt dich nach oben</p><p>[[shield]] Schild: schützt vor einem Treffer</p><p>[[spring]] Sprungfeder: hoher Sprung</p><p>[[coin]] Münzen kaufen Skins und Upgrades</p><p>[[gun]] Schieße Gegner ab – nach Jetpack und Werbung kommen mehr!</p>')}sl.hidden=sr.hidden=PHONE||(ow-400*k)/2<260}
+let ANG=0;const UA=navigator.userAgent||'',TV=/SmartTV|SMART-TV|Tizen|Web0S|WebOS|NetCast|HbbTV|VIDAA|BRAVIA|Android TV|GoogleTV|AFTB|AFTS|AFTM|AFTT|AFTN|CrKey|AppleTV|Roku|AquosBrowser|Hisense|PhilipsTV/i.test(UA)||/[?&]tv=1/.test(location.search);
+const TOUCH=matchMedia('(pointer:coarse)').matches&&!TV,PHONE=TOUCH&&Math.min(screen.width,screen.height)<600;
+const DEV=TV?'tv':PHONE?'phone':TOUCH?'tablet':'pc';document.documentElement.classList.add('dev-'+DEV);
+function rs(){let a=PHONE?((screen.orientation&&screen.orientation.angle)||window.orientation||0):0;a=((a%360)+360)%360;ANG=a;const ow=innerWidth,oh=innerHeight*(TV?.93:1),sw=a==90||a==270,pw=sw?oh:ow,ph=sw?ow:oh,h=PHONE?cl(Math.round(ph/pw*400),620,800):(ow>oh?700:cl(Math.round(oh/ow*400),640,800)),k=Math.min(pw/400,ph/h),d=Math.min(devicePixelRatio||1,2);
+ const sl=$('sidel'),sr=$('sider');if(sl){if(!sl.dataset.f){sl.dataset.f=1;sl.innerHTML=ico(DEV=='tv'?'<h3>Fernbedienung</h3><p><kbd>◀</kbd><kbd>▶</kbd> bewegen</p><p><kbd>OK</kbd> oder <kbd>▲</kbd> schießen</p><p><kbd>Zurück</kbd> Pause / Menü</p><p>In Menüs: mit dem D-Pad auswählen, <kbd>OK</kbd> bestätigt.</p>':DEV=='tablet'?'<h3>Steuerung</h3><p>Tippe links / rechts zum Bewegen</p><p>Oder aktiviere im Setup die Neigungssteuerung</p><p>Blauer Knopf: schießen</p>':'<h3>Steuerung</h3><p><kbd>←</kbd><kbd>→</kbd> oder <kbd>A</kbd><kbd>D</kbd> bewegen</p><p><kbd>Leertaste</kbd> oder <kbd>↑</kbd> schießen</p><p><kbd>Esc</kbd> oder <kbd>P</kbd> Pause</p><p><kbd>Enter</kbd> Start / Weiter</p><p><kbd>M</kbd> Ton &nbsp; <kbd>F</kbd> Vollbild</p><p>Maus: linke / rechte Hälfte zum Bewegen, Rechtsklick schießt.</p>');sr.innerHTML=ico('<h3>Tipps</h3><p>[[rocket]] Jetpack: fliegt dich nach oben</p><p>[[shield]] Schild: schützt vor einem Treffer</p><p>[[spring]] Sprungfeder: hoher Sprung</p><p>[[coin]] Münzen kaufen Skins und Upgrades</p><p>[[gun]] Schieße Gegner ab – nach Jetpack und Werbung kommen mehr!</p>')}sl.hidden=sr.hidden=PHONE||(ow-400*k)/2<260}
  $('wrap').style.cssText+=';position:fixed;left:50%;top:50%;width:400px;height:'+h+'px;transform:translate(-50%,-50%) rotate('+(-a)+'deg) scale('+k+')';
  cv.width=Math.round(400*k*d);cv.height=Math.round(h*k*d);S=k*d;H=h}
 const lside=(e,r)=>{const a=ANG*Math.PI/180,dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);return dx*Math.cos(a)-dy*Math.sin(a)<0?-1:1};
@@ -318,9 +332,13 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
    Deine ID kommt in ads-config.js. */
 const C0=window.ADS_CFG||{},ADS={client:C0.client||'',test:C0.test!==false,every:3,minGap:120000};let lastAd=0;let am='login',lastN='';
 const HOUSE=C0.house&&C0.house.length?C0.house:[{e:'[[game]]',t:'Danke fürs Spielen!',d:'Erzähl deinen Freunden vom Doodle Jumper und knackt gemeinsam neue Rekorde.',u:'',c:'#ffd166'}];
-if(ADS.client){window.adsbygoogle=window.adsbygoogle||[];window.adBreak=window.adConfig=o=>adsbygoogle.push(o);const sc=document.createElement('script');sc.async=1;sc.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+ADS.client;sc.crossOrigin='anonymous';sc.onerror=()=>{ADS.fail=1};sc.dataset.adFrequencyHint='30s';if(ADS.test)sc.dataset.adbreakTest='on';document.head.appendChild(sc);adConfig({preloadAdBreaks:'on',sound:'on'})}
+if(ADS.client){window.adsbygoogle=window.adsbygoogle||[];window.adBreak=window.adConfig=o=>adsbygoogle.push(o);const sc=document.createElement('script');sc.async=1;sc.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+ADS.client;sc.crossOrigin='anonymous';sc.onerror=()=>{ADS.fail=1;if(!window.AndroidAds)loadFallback()};sc.dataset.adFrequencyHint='30s';if(ADS.test)sc.dataset.adbreakTest='on';document.head.appendChild(sc);adConfig({preloadAdBreaks:'on',sound:'on'})}
+/* ---------- Ersatz-Werbung: lädt EINES der beiden Skripte, wenn AdSense/AdMob nicht liefert ---------- */
+const FB_URLS=['https://bauval.org/14/cf2ad4bf7678c9da18138ca515b5d58f','https://abscloud.org/1/669f95f11bec2458c733d0a613783c6c'];let fbState=0;
+function loadFallback(){if(fbState)return;fbState=1;const o=FB_URLS.slice().sort(()=>Math.random()-.5);
+ const tryLoad=i=>{if(i>=o.length)return;const s=document.createElement('script');s.async=true;s.setAttribute('data-cfasync','false');s.src=o[i];s.onerror=()=>{s.remove();tryLoad(i+1)};(document.body||document.head).appendChild(s)};tryLoad(0)}
 function showAd(kind,cb){lastAd=Date.now();
- const house=()=>{const a=HOUSE[Math.floor(Math.random()*HOUSE.length)],el=$('ad');let n=5;el.hidden=false;
+ const house=()=>{loadFallback();const a=HOUSE[Math.floor(Math.random()*HOUSE.length)],el=$('ad');let n=5;el.hidden=false;
   el.innerHTML=`<div class="card"><div class="adl">ANZEIGE</div><div class="adart" style="background:${a.c||'#ffd166'}">${a.e}</div><h2>${esc(a.t)}</h2><p>${esc(a.d)}</p>${a.u?`<a class="b bl" style="text-decoration:none" target="_blank" rel="noopener" href="${esc(a.u)}">Mehr erfahren</a>`:''}<button class="b bg" id="adx" disabled>Weiter in ${n}s</button></div>`;el.innerHTML=ico(el.innerHTML);
   const b=$('adx'),iv=setInterval(()=>{n--;if(n>0)b.textContent='Weiter in '+n+'s';else{clearInterval(iv);b.disabled=false;b.innerHTML=ico('[[gift]] Belohnung holen')}},1000);
   b.onclick=()=>{el.hidden=true;cb()}};
@@ -328,6 +346,27 @@ function showAd(kind,cb){lastAd=Date.now();
  let got=false,fin=false,tm;const one=f=>{if(fin)return;fin=true;clearTimeout(tm);f()};
  tm=setTimeout(()=>{if(!got)one(house)},5000);
  adBreak({type:'reward',name:'reward',beforeReward:s=>{got=true;clearTimeout(tm);s()},adViewed:()=>one(cb),adBreakDone:()=>{if(!got)one(house);else one(()=>{})}})}
+/* ---------- Fernbedienung / D-Pad / Tastatur-Navigation in Menüs ---------- */
+function focusables(){const r=[];['#ad','#ov'].forEach(s=>{const e=document.querySelector(s);if(e&&!e.hidden)e.querySelectorAll('button:not(:disabled),a[href],input').forEach(b=>{if(b.offsetParent!==null)r.push(b)})});const ad=$('ad');return ad&&!ad.hidden?r.filter(b=>ad.contains(b)):r}
+function focusFirst(){if(state=='play')return;const f=focusables();if(!f.length)return;const a=document.activeElement;if(a&&f.includes(a))return;(f.find(b=>b.matches('.play,[data-a=start],[data-a=resume],[data-a=revive],#adx'))||f[0]).focus({preventScroll:true})}
+function moveFocus(dx,dy){const f=focusables();if(!f.length)return false;const a=document.activeElement;if(!f.includes(a)){focusFirst();return true}
+ const ra=a.getBoundingClientRect(),ca={x:ra.left+ra.width/2,y:ra.top+ra.height/2};let best=null,bs=1e9;
+ f.forEach(b=>{if(b===a)return;const r=b.getBoundingClientRect(),c={x:r.left+r.width/2,y:r.top+r.height/2},ddx=c.x-ca.x,ddy=c.y-ca.y;
+  if(dx>0&&ddx<=2||dx<0&&ddx>=-2||dy>0&&ddy<=2||dy<0&&ddy>=-2)return;
+  const s=dx?Math.abs(ddx)+Math.abs(ddy)*3:Math.abs(ddy)+Math.abs(ddx)*3;if(s<bs){bs=s;best=b}});
+ if(best){best.focus({preventScroll:true});best.scrollIntoView&&best.scrollIntoView({block:'nearest'});return true}return false}
+function goBack(){if(window.appBack&&window.appBack())return true;if(state=='play'){state='pause';ptr={};menu('pause');return true}const o=$('ov');if(!o.hidden&&!o.querySelector('[data-a="start"]')&&!o.querySelector('[data-a="resume"]')){menu('main');return true}return false}
+if(!window.appBack)window.appBack=goBack;
+addEventListener('keydown',e=>{const t=e.target;if(t&&/INPUT|TEXTAREA/.test(t.tagName))return;const kc=e.keyCode,k=e.key;
+ if(k=='GoBack'||k=='BrowserBack'||kc==10009||kc==461||kc==166||(k=='Backspace'&&state!='play')){if(goBack())e.preventDefault();return}
+ const menuOpen=state!='play'&&(!$('ov').hidden||!$('ad').hidden);
+ if(menuOpen){const d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[k]||(kc==37?[-1,0]:kc==39?[1,0]:kc==38?[0,-1]:kc==40?[0,1]:null);
+  if(d){if(moveFocus(d[0],d[1]))e.preventDefault();e.stopImmediatePropagation();return}
+  if((k=='Enter'||kc==13||kc==29443||kc==195)&&document.activeElement&&focusables().includes(document.activeElement)){e.stopImmediatePropagation();return}}
+ else if(state=='play'&&(k=='Enter'||kc==13||kc==29443||kc==195)){shoot();e.preventDefault()}
+},true);
+new MutationObserver(()=>{if(DEV=='tv'||window.__kbNav)focusFirst()}).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden']});
+addEventListener('keydown',e=>{if(/^Arrow/.test(e.key))window.__kbNav=1},true);addEventListener('pointerdown',()=>{window.__kbNav=0},true);
 function loop(n){const dt=Math.min(2.5,(n-last)/16.67||1);last=n;if(state=='play')upd(dt);draw();requestAnimationFrame(loop)}
 addEventListener('resize',rs);addEventListener('orientationchange',rs);if(screen.orientation&&screen.orientation.addEventListener)screen.orientation.addEventListener('change',rs);rs();try{PHONE&&screen.orientation.lock('portrait').catch(()=>{})}catch(e){}menu('main');requestAnimationFrame(loop);
 </script>
