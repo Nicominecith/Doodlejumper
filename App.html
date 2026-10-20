@@ -333,16 +333,30 @@ if(D.acc)api('me').then(j=>{mergeData(j.data);sv()}).catch(()=>{});
    Native Werbung: AdMob über die Android-App (AndroidAds). */
 const C0=window.ADS_CFG||{},ADS={client:C0.client||'',test:C0.test!==false,every:3,minGap:120000};let lastAd=0;let am='login',lastN='';
 const HOUSE=C0.house&&C0.house.length?C0.house:[{e:'[[game]]',t:'Danke fürs Spielen!',d:'Erzähl deinen Freunden vom Doodle Jumper und knackt gemeinsam neue Rekorde.',u:'',c:'#ffd166'}];
-if(ADS.client){window.adsbygoogle=window.adsbygoogle||[];window.adBreak=window.adConfig=o=>adsbygoogle.push(o);const sc=document.createElement('script');sc.async=1;sc.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+ADS.client;sc.crossOrigin='anonymous';sc.onerror=()=>{ADS.fail=1;if(!window.AndroidAds)loadFallback()};sc.dataset.adFrequencyHint='30s';if(ADS.test)sc.dataset.adbreakTest='on';document.head.appendChild(sc);adConfig({preloadAdBreaks:'on',sound:'on'})}
+if(ADS.client){window.adsbygoogle=window.adsbygoogle||[];window.adBreak=window.adConfig=o=>adsbygoogle.push(o);const sc=document.createElement('script');sc.async=1;sc.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+ADS.client;sc.crossOrigin='anonymous';sc.onerror=()=>{ADS.fail=1};sc.dataset.adFrequencyHint='30s';if(ADS.test)sc.dataset.adbreakTest='on';document.head.appendChild(sc);adConfig({preloadAdBreaks:'on',sound:'on'})}
 window.onRewardedDone=()=>{const f=window.__rw;window.__rw=null;f&&f()};window.onRewardedFail=()=>{window.__rw=null;const f=window.__rwf;window.__rwf=null;f&&f()};
 window.appBack=()=>{if(state=='play'){state='pause';ptr={};menu('pause');return true}const o=$('ov');if(!o.hidden&&!o.querySelector('[data-a="start"]')&&!o.querySelector('[data-a="resume"]')){menu('main');return true}return false};
-/* ---------- Ersatz-Werbung: lädt EINES der beiden Skripte, wenn AdSense/AdMob nicht liefert ---------- */
-const FB_URLS=['https://bauval.org/14/cf2ad4bf7678c9da18138ca515b5d58f','https://abscloud.org/1/669f95f11bec2458c733d0a613783c6c'];let fbState=0;
-function loadFallback(){if(fbState)return;fbState=1;const o=FB_URLS.slice().sort(()=>Math.random()-.5);
- const tryLoad=i=>{if(i>=o.length)return;const s=document.createElement('script');s.async=true;s.setAttribute('data-cfasync','false');s.src=o[i];s.onerror=()=>{s.remove();tryLoad(i+1)};(document.body||document.head).appendChild(s)};tryLoad(0)}
+/* ---------- Ersatz-Werbung: Banner in einem abgeschotteten Kasten (iframe), nie auf der ganzen Seite ----------
+   Jeder Eintrag = ein Banner-Code. Bei jedem Ausfall von AdSense/AdMob wird zufällig einer gezeigt.
+   Typ 'native': {src,id}  |  Typ '300x250': {key,src,w,h} */
+const FB_BANNERS=[
+ {t:'native',src:'https://bauval.org/21/f4fbbddd0d7f95182611c2f75135b3cd',id:'container-f4fbbddd0d7f95182611c2f75135b3cd',h:120},
+ {t:'iframe',key:'7135bd5f9a1464b17118216d609a8a6c',src:'https://bauval.org/22/7135bd5f9a1464b17118216d609a8a6c',w:300,h:250}
+];
+function fbBody(b){return b.t=='native'
+ ?'<script async="async" data-cfasync="false" src="'+b.src+'"><\/script><div id="'+b.id+'"></div>'
+ :'<script>atOptions={"key":"'+b.key+'","format":"iframe","height":'+b.h+',"width":'+b.w+',"params":{}};<\/script><script src="'+b.src+'"><\/script>'}
+function loadFallback(slot){if(!slot||!FB_BANNERS.length)return;const b=FB_BANNERS[Math.floor(Math.random()*FB_BANNERS.length)];
+ const f=document.createElement('iframe');f.title='Anzeige';f.setAttribute('scrolling','no');
+ /* ohne allow-top-navigation: das Spiel kann nie weitergeleitet werden */
+ f.setAttribute('sandbox','allow-scripts allow-popups allow-popups-to-escape-sandbox');
+ f.style.cssText='width:100%;max-width:'+(b.w?b.w+20:340)+'px;height:'+(b.h+4)+'px;border:0;margin:8px auto;display:block;background:#fff;border-radius:12px';
+ f.srcdoc='<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;background:#fff;overflow:hidden;text-align:center}</style></head><body>'+fbBody(b)+'<script>setInterval(function(){parent.postMessage({djAdH:document.body.scrollHeight},"*")},700)<\/script></body></html>';
+ const on=e=>{if(e.source===f.contentWindow&&e.data&&e.data.djAdH)f.style.height=Math.max(60,Math.min(400,e.data.djAdH+4))+'px'};addEventListener('message',on);
+ slot.appendChild(f)}
 function showAd(kind,cb){lastAd=Date.now();
- const house=()=>{loadFallback();const a=HOUSE[Math.floor(Math.random()*HOUSE.length)],el=$('ad');let n=5;el.hidden=false;
-  el.innerHTML=`<div class="card"><div class="adl">ANZEIGE</div><div class="adart" style="background:${a.c||'#ffd166'}">${a.e}</div><h2>${esc(a.t)}</h2><p>${esc(a.d)}</p>${a.u?`<a class="b bl" style="text-decoration:none" target="_blank" rel="noopener" href="${esc(a.u)}">Mehr erfahren</a>`:''}<button class="b bg" id="adx" disabled>Weiter in ${n}s</button></div>`;el.innerHTML=ico(el.innerHTML);
+ const house=()=>{const a=HOUSE[Math.floor(Math.random()*HOUSE.length)],el=$('ad');let n=5;el.hidden=false;
+  el.innerHTML=`<div class="card"><div class="adl">ANZEIGE</div><div class="adart" style="background:${a.c||'#ffd166'}">${a.e}</div><h2>${esc(a.t)}</h2><p>${esc(a.d)}</p>${a.u?`<a class="b bl" style="text-decoration:none" target="_blank" rel="noopener" href="${esc(a.u)}">Mehr erfahren</a>`:''}<div id="fbslot"></div><button class="b bg" id="adx" disabled>Weiter in ${n}s</button></div>`;el.innerHTML=ico(el.innerHTML);loadFallback($('fbslot'));
   const b=$('adx'),iv=setInterval(()=>{n--;if(n>0)b.textContent='Weiter in '+n+'s';else{clearInterval(iv);b.disabled=false;b.innerHTML=ico('[[gift]] Belohnung holen')}},1000);
   b.onclick=()=>{el.hidden=true;cb()}};
  if(window.AndroidAds&&AndroidAds.showRewarded){window.__rw=cb;window.__rwf=house;try{AndroidAds.showRewarded(kind);return}catch(e){window.__rw=null}}
