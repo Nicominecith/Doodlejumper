@@ -110,7 +110,7 @@ kbd{display:inline-block;min-width:1.6em;padding:1px 6px;margin:1px;border-radiu
 .side .ic{width:1.45em;height:1.45em;filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff)}button:focus-visible,[data-a]:focus-visible{outline:4px solid #fff;outline-offset:3px;box-shadow:0 0 0 8px #7bd0ff88!important}
 .bnr{position:relative;min-height:250px;display:flex;align-items:center;justify-content:center;margin:10px 0;background:#0000000d;border-radius:12px}
 .bnr iframe,.bn iframe{display:block;border:0;max-width:100%}.bn{margin-top:12px}.bn:empty{display:none}.side{overflow:hidden}
-</style></head><body>
+.bnr::before{content:'Anzeige wird geladen…';position:absolute;left:0;right:0;text-align:center;color:#9a9484;font-size:.9rem}.bnr iframe{position:relative;z-index:1;background:transparent}</style></head><body>
 <aside id="sidel" class="side l" hidden></aside><aside id="sider" class="side r" hidden></aside>
 <div id="wrap"><canvas id="g"></canvas>
 <div id="hud" hidden><span id="hl"></span><span id="hs"></span><span id="hc"></span></div>
@@ -325,7 +325,7 @@ const C0=window.ADS_CFG||{},ADS={client:C0.client||'',test:C0.test!==false,every
 const HOUSE=C0.house&&C0.house.length?C0.house:[{e:'[[game]]',t:'Danke fürs Spielen!',d:'Erzähl deinen Freunden vom Doodle Jumper und knackt gemeinsam neue Rekorde.',u:'',c:'#ffd166'}];
 if(ADS.client){window.adsbygoogle=window.adsbygoogle||[];window.adBreak=window.adConfig=o=>adsbygoogle.push(o);const sc=document.createElement('script');sc.async=1;sc.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+ADS.client;sc.crossOrigin='anonymous';sc.onerror=()=>{ADS.fail=1};sc.dataset.adFrequencyHint='30s';if(ADS.test)sc.dataset.adbreakTest='on';document.head.appendChild(sc);adConfig({preloadAdBreaks:'on',sound:'on'})}
 const BN={a:'7135bd5f9a1464b17118216d609a8a6c',b:'f4fbbddd0d7f95182611c2f75135b3cd'};let FB=0;
-function mkBanner(el,t){if(!el)return;const f=document.createElement('iframe'),S='<scr'+'ipt',E='</scr'+'ipt>';f.width=300;f.height=250;f.scrolling='no';f.title='Anzeige';f.setAttribute('sandbox','allow-scripts allow-popups allow-popups-to-escape-sandbox');f.style.cssText='border:0;display:block;margin:0 auto;max-width:100%';
+function mkBanner(el,t){if(!el)return;const f=document.createElement('iframe'),S='<scr'+'ipt',E='</scr'+'ipt>';f.width=300;f.height=250;f.scrolling='no';f.title='Anzeige';f.setAttribute('sandbox','allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');f.style.cssText='border:0;display:block;margin:0 auto;max-width:100%';
  f.srcdoc=t=='a'?'<body style="margin:0">'+S+'>atOptions={"key":"'+BN.a+'","format":"iframe","height":250,"width":300,"params":{}};'+E+S+' src="https://bauval.org/22/'+BN.a+'">'+E+'</body>':'<body style="margin:0">'+S+' async="async" data-cfasync="false" src="https://bauval.org/21/'+BN.b+'">'+E+'<div id="container-'+BN.b+'"></div></body>';el.appendChild(f)}
 function showAd(kind,cb){lastAd=Date.now();
  const house=()=>{const a=HOUSE[Math.floor(Math.random()*HOUSE.length)],el=$('ad');let n=5;el.hidden=false;
@@ -335,7 +335,7 @@ function showAd(kind,cb){lastAd=Date.now();
  const fb=()=>house();
  if(!ADS.client||ADS.fail||!window.adBreak)return fb();
  let got=false,fin=false,tm;const one=f=>{if(fin)return;fin=true;clearTimeout(tm);f()};
- tm=setTimeout(()=>{if(!got)one(fb)},5000);
+ tm=setTimeout(()=>{if(!got)one(fb)},1200);
  adBreak({type:'reward',name:'reward',beforeReward:s=>{got=true;clearTimeout(tm);s()},adViewed:()=>one(cb),adBreakDone:()=>{if(!got)one(fb);else one(()=>{})}})}
 function loop(n){const dt=Math.min(2.5,(n-last)/16.67||1);last=n;if(state=='play')upd(dt);draw();requestAnimationFrame(loop)}
 addEventListener('resize',rs);addEventListener('orientationchange',rs);if(screen.orientation&&screen.orientation.addEventListener)screen.orientation.addEventListener('change',rs);rs();try{PHONE&&screen.orientation.lock('portrait').catch(()=>{})}catch(e){}menu('main');requestAnimationFrame(loop);
